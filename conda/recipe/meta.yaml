@@ -1,0 +1,44 @@
+{% set name = "sbpp" %}
+{% set version = "v1.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  fn: {{ name }}-{{ version }}.tar.gz
+  
+  url: https://github.com/greglandrum/conda_build_problems/archive/{{ version }}.tar.gz
+  sha256: 45324dbf0bfc453f230dd490de0f8a0d655088746fe2044cee38c4f1bdb4c3cc
+
+build:
+  skip: true  # [win and (py27 or py35)]
+  number: 0
+
+requirements:
+  build:
+    - cmake
+    #- toolchain
+    - requests
+    - boost 1.65.1
+    - python
+    - numpy 1.11.*
+  run:
+    - boost 1.65.1
+    - python
+    - numpy >=1.11
+
+test:
+  imports:
+    - rdkit
+    - rdkit.rdBase
+
+about:
+  home: http://rdkit.org
+  license: BSD 3-Clause
+  license_file: license.txt
+  summary: 'RDKit is a collection of cheminformatics and machine-learning software written in C++ and Python.'
+
+extra:
+  recipe-maintainers:
+    - greglandrum
