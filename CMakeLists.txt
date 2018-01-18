@@ -15,60 +15,10 @@ set(CMAKE_MODULE_PATH
 
 add_library(rdkit_base INTERFACE)
 
-option(RDK_BUILD_SWIG_WRAPPERS "build the SWIG wrappers" OFF )
 option(RDK_BUILD_PYTHON_WRAPPERS "build the standard python wrappers" ON )
-option(RDK_BUILD_COMPRESSED_SUPPLIERS "build in support for compressed MolSuppliers" OFF )
-option(RDK_BUILD_INCHI_SUPPORT "build the rdkit inchi wrapper" OFF )
-option(RDK_BUILD_AVALON_SUPPORT "install support for the avalon toolkit. Use the variable AVALONTOOLS_DIR to set the location of the source." OFF )
-option(RDK_BUILD_PGSQL "build the PostgreSQL cartridge" OFF )
-option(RDK_PGSQL_STATIC "statically link rdkit libraries into the PostgreSQL cartridge" ON )
-option(RDK_BUILD_CONTRIB "build the Contrib directory" OFF )
-option(RDK_INSTALL_INTREE "install the rdkit in the source tree (former behavior)" ON )
-option(RDK_INSTALL_STATIC_LIBS "install the rdkit static libraries" ON )
-option(RDK_BUILD_THREADSAFE_SSS "enable thread-safe substructure searching (requires boost.thread)" ON )
-option(RDK_BUILD_SLN_SUPPORT "include support for the SLN format" ON )
-option(RDK_TEST_MULTITHREADED "run some tests of multithreading" ON )
-option(RDK_BUILD_SWIG_JAVA_WRAPPER "build the SWIG JAVA wrappers (does nothing if RDK_BUILD_SWIG_WRAPPERS is not set)" ON )
-option(RDK_BUILD_SWIG_CSHARP_WRAPPER "build the experimental SWIG C# wrappers (does nothing if RDK_BUILD_SWIG_WRAPPERS is not set)" OFF )
-option(RDK_SWIG_STATIC "statically link rdkit libraries into the SWIG wrappers" ON )
-option(RDK_TEST_MMFF_COMPLIANCE "run MMFF compliance tests (requires tar/gzip)" ON )
-option(RDK_BUILD_CPP_TESTS "build the c++ tests (disabing can speed up builds" ON)
-option(RDK_USE_FLEXBISON "use flex/bison, if available, to build the SMILES/SMARTS/SLN parsers" OFF)
-option(RDK_TEST_COVERAGE "Use G(L)COV to compute test coverage" OFF)
-option(RDK_USE_BOOST_SERIALIZATION "Use the boost serialization library if available" ON)
-option(RDK_BUILD_TEST_GZIP "Build the gzip'd stream test" OFF)
-option(RDK_OPTIMIZE_NATIVE "Use native features while compiling." ON)
-option(RDK_USE_STRICT_ROTOR_DEFINITION "Use the most strict rotatable bond definition" ON)
-option(RDK_BUILD_DESCRIPTORS3D "Build the 3D descriptors calculators, requires Eigen3 to be installed" ON)
-option(RDK_BUILD_FREESASA_SUPPORT "build the rdkit freesasa wrapper" OFF )
-if(NOT MSVC)
-  if(RDK_OPTIMIZE_NATIVE)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mpopcnt")
-  endif()
-endif()
-
-if(RDK_BUILD_SWIG_WRAPPERS!=ON)
-  set(RDK_BUILD_SWIG_JAVA_WRAPPER OFF)
-  set(RDK_BUILD_SWIG_CSHARP_WRAPPER OFF)
-endif()
-
-if(RDK_SWIG_STATIC AND RDK_BUILD_SWIG_WRAPPERS)
-  if(NOT RDK_INSTALL_STATIC_LIBS)
-    message("Enabling RDK_INSTALL_STATIC_LIBS because RDK_SWIG_STATIC is set.")
-    set(RDK_INSTALL_STATIC_LIBS ON CACHE BOOL "install the rdkit static libraries" FORCE)
-  endif(NOT RDK_INSTALL_STATIC_LIBS)
-endif()
-
-
-if(RDK_PGSQL_STATIC AND RDK_BUILD_PGSQL)
-  if(NOT RDK_INSTALL_STATIC_LIBS)
-    message("Enabling RDK_INSTALL_STATIC_LIBS because RDK_PGSQL_STATIC is set.")
-    set(RDK_INSTALL_STATIC_LIBS ON CACHE BOOL "install the rdkit static libraries" FORCE)
-  endif(NOT RDK_INSTALL_STATIC_LIBS)
-endif()
-
-include(TestBigEndian)
-TEST_BIG_ENDIAN(RDK_BIG_ENDIAN)
+option(RDK_INSTALL_INTREE "install the rdkit in the source tree (former behavior)" OFF )
+option(RDK_INSTALL_STATIC_LIBS "install the rdkit static libraries" OFF )
+option(RDK_BUILD_CPP_TESTS "build the c++ tests (disabing can speed up builds" OFF)
 
 # At build time put runtime binaries in the bin subdirectory
 set(RDK_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
@@ -98,20 +48,6 @@ else(RDK_INSTALL_INTREE)
   set(RDKit_ShareDir "share/RDKit")
 endif(RDK_INSTALL_INTREE)
 
-if(RDK_BUILD_SWIG_WRAPPERS)
-  set(RDKit_JavaLibDir "${RDKit_ExternalDir}/java_lib")
-endif(RDK_BUILD_SWIG_WRAPPERS)
-
-if(CMAKE_SIZEOF_VOID_P MATCHES 4)
-  target_compile_definitions(rdkit_base INTERFACE "-DRDK_32BIT_BUILD")
-else()
-  target_compile_definitions(rdkit_base INTERFACE "-DRDK_64BIT_BUILD")
-endif()
-
-if(MINGW)
-  target_compile_definitions(rdkit_base INTERFACE "-DBOOST_SYSTEM_NO_DEPRECATED")
-endif(MINGW)
-
 # defines macros: rdkit_python_extension, rdkit_test
 include(RDKitUtils)
 install(EXPORT ${RDKit_EXPORTED_TARGETS} DESTINATION ${RDKit_LibDir})
@@ -131,23 +67,6 @@ install(FILES
     ${RDKit_BINARY_DIR}/rdkit-config.cmake
     ${RDKit_BINARY_DIR}/rdkit-config-version.cmake
     DESTINATION ${RDKit_LibDir})
-
-# disable some warnings that we don't care about
-if(MSVC)
-  target_compile_definitions(rdkit_base INTERFACE "/wd4267")  # conversion with possible loss of data. This should occasionally be enabled to check what's going on
-endif(MSVC)
-
-
-# extra boost versions
-if(MSVC)
-  # FIX: do we still need this?
-  SET(Boost_ADDITIONAL_VERSIONS "1.48" "1.48.0" "1.45" "1.45.0" "1.44" "1.44.0" "1.43" "1.43.0" "1.42" "1.42.0" "1.41" "1.41.0" "1.40" "1.40.0")
-  target_compile_definitions(rdkit_base INTERFACE "-DBOOST_ALL_NO_LIB")
-endif(MSVC)
-
-if(RDK_BUILD_INCHI_SUPPORT)
-  find_package(Inchi)
-endif(RDK_BUILD_INCHI_SUPPORT)
 
 if(RDK_BUILD_PYTHON_WRAPPERS)
   #-------
@@ -184,11 +103,6 @@ if(RDK_BUILD_PYTHON_WRAPPERS)
      find_package(Boost 1.56.0 COMPONENTS python REQUIRED)
      list(APPEND Boost_IMPORTED_LIBRARIES "Boost::python")
   endif(PYTHON_VERSION_MAJOR EQUAL 3)
-
-
-  if(RDK_INSTALL_INTREE)
-    set(RDKit_PythonDir "${CMAKE_SOURCE_DIR}/rdkit")
-  else(RDK_INSTALL_INTREE)
     if (NOT PYTHON_INSTDIR)
       # Determine correct installation directory for Python bindings
       # From http://plplot.svn.sourceforge.net/viewvc/plplot/trunk/cmake/modules/python.cmake?revision=11014
@@ -202,25 +116,10 @@ if(RDK_BUILD_PYTHON_WRAPPERS)
     message("Python Install directory ${PYTHON_INSTDIR}")
     install(DIRECTORY rdkit DESTINATION ${PYTHON_INSTDIR}
       COMPONENT python
-      PATTERN ".svn" EXCLUDE
-      PATTERN "test_data" EXCLUDE
-      PATTERN "testData" EXCLUDE
-      PATTERN "test_list*" EXCLUDE
       PATTERN "CMake*" EXCLUDE
-      PATTERN "Basement" EXCLUDE
-      PATTERN "UnitTest*" EXCLUDE
       )
     set(RDKit_PythonDir "${PYTHON_INSTDIR}/rdkit")
-  endif(RDK_INSTALL_INTREE)
-
-else(RDK_BUILD_PYTHON_WRAPPERS)
-  find_package(Boost 1.56.0 REQUIRED)
-endif(RDK_BUILD_PYTHON_WRAPPERS)
-
-if(APPLE)
-  find_package(Boost 1.56.0 COMPONENTS regex REQUIRED)
-  list(APPEND Boost_IMPORTED_LIBRARIES "Boost::regex")
-endif(APPLE)
+endif()
 
 # set the boost include directories
 target_link_libraries(rdkit_base INTERFACE Boost::boost)
@@ -235,76 +134,6 @@ target_include_directories(rdkit_base INTERFACE
 # detect it.
 string(REGEX MATCH "clang" CMAKE_COMPILER_IS_CLANG "${CMAKE_C_COMPILER}")
 
-if(RDK_BUILD_DESCRIPTORS3D)
-  find_package(Eigen3)
-  if(EIGEN3_FOUND)
-    target_compile_definitions(rdkit_base INTERFACE "-DRDK_HAS_EIGEN3" "-DRDK_BUILD_DESCRIPTORS3D")
-    target_link_libraries(rdkit_base INTERFACE Eigen3::Eigen)
-  else(EIGEN3_FOUND)
-    message("Eigen3 not found, disabling the Descriptors3D build.")
-    set(RDK_BUILD_DESCRIPTORS3D OFF)
-  endif(EIGEN3_FOUND)
-endif(RDK_BUILD_DESCRIPTORS3D)
-
-
-find_package (Threads)
-set(RDKit_THREAD_LIBS Threads::Threads)
-if(RDK_BUILD_THREADSAFE_SSS)
-  find_package(Boost 1.56.0 COMPONENTS thread system)
-  if(Boost_THREAD_FOUND AND Boost_SYSTEM_FOUND)
-    list(APPEND Boost_IMPORTED_LIBRARIES Boost::thread Boost::system)
-    target_compile_definitions(rdkit_base INTERFACE -DRDK_THREADSAFE_SSS -DBOOST_ALL_NO_LIB)
-    list(APPEND RDKit_THREAD_LIBS Boost::thread Boost::system)
-    if(RDK_TEST_MULTITHREADED)
-      target_compile_definitions(rdkit_base INTERFACE "-DRDK_TEST_MULTITHREADED")
-    endif()
-  else()
-    message("Boost thread or system not found. Disabling RDK_BUILD_THREADSAFE_SSS.")
-    set(RDK_BUILD_THREADSAFE_SSS OFF)
-    set(RDK_TEST_MULTITHREADED OFF)
-  endif()
-else()
-  if(RDK_TEST_MULTITHREADED)
-    message("RDK_TEST_MULTITHREADED does not make sense without RD_BUILD_THREADSAFE_SSS, disabling it.")
-    set(RDK_TEST_MULTITHREADED OFF)
-  endif()
-endif()
-
-if(RDK_USE_BOOST_SERIALIZATION)
-    find_package(Boost 1.56.0 COMPONENTS serialization)
-    if (Boost_SERIALIZATION_LIBRARY)
-      list(APPEND Boost_IMPORTED_LIBRARIES "Boost::serialization")
-    endif()
-endif()
-
-if(RDK_BUILD_PGSQL)
-  find_package(PostgreSQL REQUIRED)
-endif(RDK_BUILD_PGSQL)
-
-# setup our compiler flags:
-if (RDK_TEST_COVERAGE)
- if (NOT RDK_USE_FLEXBISON)
-   message(FATAL_ERROR, "Test coverage doesn't current work unless FLEX and BISON are run.")
- endif(NOT RDK_USE_FLEXBISON)
-
- message("====== Installing test coverage support ======")
- message("  To run:")
- message("   make install")
- message("   make RDKit_coverage")
- message("")
- message(" open <build_dir>/coverage/index.html")
- message("")
- message(" If any of the RDKit tests fail, coverage will probably not be generated.")
- message("====== Installing test coverage support ======")
- message("")
-
- INCLUDE(CodeCoverage)
- SET(CMAKE_CXX_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
- SET(CMAKE_C_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
- message("== setup_target_for_coverage(${PROJECT_NAME}_coverage test coverage)")
- setup_target_for_coverage(${PROJECT_NAME}_coverage ctest coverage)
-
-else(RDK_TEST_COVERAGE)
  if(CMAKE_COMPILER_IS_GNUCXX)
    # We don't on C_FLAGS warnings to keep Avalon compiling quiet
    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated -Wno-unused-function -fno-strict-aliasing")
@@ -319,79 +148,10 @@ else(RDK_TEST_COVERAGE)
    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-array-bounds -fPIC")
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-deprecated -Wno-unused-function -fno-strict-aliasing -fPIC")
  endif()
-endif(RDK_TEST_COVERAGE)
 
-if(NOT RDK_INSTALL_INTREE)
-  install(FILES README license.txt
-          DESTINATION ${RDKit_ShareDir}
-          COMPONENT base
-          )
-endif(NOT RDK_INSTALL_INTREE)
-
-if (RDK_SQUASH_MVC_SECURE_WARNINGS)
-  MESSAGE("== Squashing MSVC Security warnings (do not use during development)")
-  target_compile_definitions(rdkit_base INTERFACE "-D_SCL_SECURE_NO_WARNINGS")
-  target_compile_definitions(rdkit_base INTERFACE "/wd4996")
-endif(RDK_SQUASH_MVC_SECURE_WARNINGS)
-
-if(RDK_USE_STRICT_ROTOR_DEFINITION)
-    MESSAGE("== Using strict rotor definition")
-    target_compile_definitions(rdkit_base INTERFACE "-DRDK_USE_STRICT_ROTOR_DEFINITION")
-endif()
-
-#add_subdirectory(External)
 add_subdirectory(Code)
 
 if(RDK_BUILD_PYTHON_WRAPPERS)
-#  add_subdirectory(Projects)
   add_subdirectory(rdkit)
 endif(RDK_BUILD_PYTHON_WRAPPERS)
 
-if(RDK_BUILD_CONTRIB)
-#  add_subdirectory(Contrib)
-endif(RDK_BUILD_CONTRIB)
-
-# Packaging
-SET(CPACK_GENERATOR "TGZ;DEB;RPM")
-SET(CPACK_RPM_COMPONENT_INSTALL ON)
-SET(CPACK_DEB_COMPONENT_INSTALL ON)
-SET(CPACK_MONOLITHIC_INSTALL OFF)
-
-SET(CPACK_COMPONENTS_ALL runtime base data docs dev python extras)
-set(CPACK_COMPONENT_RUNTIME_GROUP "Runtime")
-set(CPACK_COMPONENT_BASE_GROUP "Runtime")
-set(CPACK_COMPONENT_DATA_GROUP "Runtime")
-set(CPACK_COMPONENT_DOCS_GROUP "Runtime")
-set(CPACK_COMPONENT_DEV_GROUP "Development")
-set(CPACK_COMPONENT_PYTHON_GROUP "Python")
-set(CPACK_COMPONENT_EXTRAS_GROUP "Extras")
-
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "RDKit")
-SET(CPACK_PACKAGE_VENDOR "rdkit.org")
-SET(CPACK_PACKAGE_CONTACT "greg.landrum@gmail.com")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/license.txt")
-SET(CPACK_PACKAGE_VERSION_MAJOR ${RDKit_Year})
-SET(CPACK_PACKAGE_VERSION_MINOR ${RDKit_Month})
-SET(CPACK_PACKAGE_VERSION_PATCH ${RDKit_Revision})
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
-#IF(WIN32 AND NOT UNIX)
-#  # There is a bug in NSI that does not handle full unix paths properly. Make
-#  # sure there is at least one set of four (4) backlasshes.
-#  SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/Utilities/Release\\\\InstallIcon.bmp")
-#  SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\MyExecutable.exe")
-#  SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} My Famous Project")
-#  SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.my-project-home-page.org")
-#  SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.my-personal-home-page.com")
-#  SET(CPACK_NSIS_CONTACT "me@my-personal-home-page.com")
-#  SET(CPACK_NSIS_MODIFY_PATH ON)
-#ELSE(WIN32 AND NOT UNIX)
-#  SET(CPACK_STRIP_FILES "bin/MyExecutable")
-#  SET(CPACK_SOURCE_STRIP_FILES "")
-#ENDIF(WIN32 AND NOT UNIX)
-#SET(CPACK_PACKAGE_EXECUTABLES "MyExecutable" "My Executable")
-
-
-SET(CPACK_SET_DESTDIR ON)
-
-INCLUDE(CPack)
