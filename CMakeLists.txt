@@ -322,31 +322,6 @@ else(RDK_TEST_COVERAGE)
 endif(RDK_TEST_COVERAGE)
 
 if(NOT RDK_INSTALL_INTREE)
-  install(DIRECTORY Data DESTINATION
-      ${RDKit_ShareDir}
-      COMPONENT data
-      PATTERN ".svn" EXCLUDE
-      )
-  install(DIRECTORY Docs DESTINATION
-      ${RDKit_ShareDir}
-      COMPONENT docs
-      PATTERN ".svn" EXCLUDE
-      PATTERN "_build" EXCLUDE
-      )
-  install(DIRECTORY Contrib DESTINATION
-      ${RDKit_ShareDir}
-      COMPONENT extras
-      PATTERN ".svn" EXCLUDE
-      )
-  if(RDK_BUILD_PYTHON_WRAPPERS)
-    install(DIRECTORY Projects DESTINATION
-        ${RDKit_ShareDir}
-        COMPONENT extras
-        PATTERN ".svn" EXCLUDE
-        PATTERN "test_list*" EXCLUDE
-        PATTERN "CMake*" EXCLUDE
-        )
-  endif(RDK_BUILD_PYTHON_WRAPPERS)
   install(FILES README license.txt
           DESTINATION ${RDKit_ShareDir}
           COMPONENT base
