@@ -16,15 +16,11 @@ build:
 requirements:
   build:
     - cmake
-    #- toolchain
-    - requests
     - boost 1.65.*
     - python
-    - numpy 1.11.*
   run:
     - boost 1.65.*
     - python
-    - numpy >=1.11
 
 test:
   imports:
