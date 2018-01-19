@@ -8,42 +8,19 @@
 
 namespace python = boost::python;
 
-#include "../python_streambuf.h"
-namespace RDKit {
-const char * rdkitVersion = "2018.03.1.dev1";
-
-// The Boost version as detected at build time.
-// CMake's Boost_LIB_VERSION is defined by the FindBoost.cmake module
-// to be the same as the value from <boost/version.hpp>
-const char * boostVersion = "1_65_1";
-
-// The system/compiler on which RDKit was built as detected at build time.
-const char * rdkitBuild = "Darwin|17.3.0|UNIX|AppleClang|64-bit";
-}
-
 namespace {
-struct python_streambuf_wrapper {
-  typedef boost_adaptbx::python::streambuf wt;
-
+  int stupid_fun(int a1) {return 1;};
+  int stupid_fun2(float a1, int a2) {return 1;};
+  struct stupid_wrapper {
   static void wrap() {
-    using namespace boost::python;
-    class_<wt, boost::noncopyable>("streambuf", no_init)
-        .def(init<object&, std::size_t>(
-            (arg("python_file_obj"), arg("buffer_size") = 0),
-            "documentation")[with_custodian_and_ward_postcall<0, 2>()]);
+    //python::def("stupid_fun",&stupid_fun,(python::arg("a1") = float(0)), "docs"); // this one works
+    python::def("stupid_fun",&stupid_fun,(python::arg("a1") = int(0)), "docs"); // this one seg faults
+    //python::def("stupid_fun2",&stupid_fun2,(python::arg("a1") = float(0),python::arg("a2") = int(0)), "docs"); // seg faults
   }
 };
 
 }
 
 BOOST_PYTHON_MODULE(rdBase) {
-  python::scope().attr("__doc__") =
-      "Module containing basic definitions for wrapped C++ code\n"
-      "\n";
-
-  python::scope().attr("rdkitVersion") = RDKit::rdkitVersion;
-  python::scope().attr("boostVersion") = RDKit::boostVersion;
-  python::scope().attr("rdkitBuild") = RDKit::rdkitBuild;
-
-  python_streambuf_wrapper::wrap();
+  stupid_wrapper::wrap();
 }
