@@ -1,16 +1,14 @@
 {% set name = "sbpp" %}
-{% set version = "v1.0" %}
+{% set version = "master" %}
 
 package:
   name: {{ name|lower }}
-  version: {{ version }}
+  version: {{ environ.get('GIT_DESCRIBE_TAG', 'LOCAL').replace("_", ".").replace("Release.","") }}.{{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
 
 source:
-  fn: {{ name }}-{{ version }}.tar.gz
-  
-  url: https://github.com/greglandrum/conda_build_problems/archive/{{ version }}.tar.gz
-  sha256: 45324dbf0bfc453f230dd490de0f8a0d655088746fe2044cee38c4f1bdb4c3cc
-
+  git_url: https://github.com/greglandrum/conda_build_problems.git
+  git_rev: master
+ 
 build:
   skip: true  # [win and (py27 or py35)]
   number: 0
@@ -20,11 +18,11 @@ requirements:
     - cmake
     #- toolchain
     - requests
-    - boost 1.65.1
+    - boost 1.65.*
     - python
     - numpy 1.11.*
   run:
-    - boost 1.65.1
+    - boost 1.65.*
     - python
     - numpy >=1.11
 

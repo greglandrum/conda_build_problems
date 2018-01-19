@@ -1,14 +1,9 @@
-// $Id$
 //
-// Copyright (c) 2004-2011 greg Landrum and Rational Discovery LLC
+// Copyright (c) 2018 Greg Landrum
 //
-//   @@ All Rights Reserved @@
-//  This file is part of the RDKit.
-//  The contents are covered by the terms of the BSD license
-//  which is included in the file license.txt, found at the root
-//  of the RDKit source tree.
 //
-#include "../python.h"
+#include <boost/python.hpp>
+#include <boost/python/scope.hpp>
 #include <boost/python.hpp>
 
 namespace python = boost::python;
