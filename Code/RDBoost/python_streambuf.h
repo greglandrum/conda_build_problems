@@ -14,17 +14,12 @@
 //
 #ifndef BOOST_ADAPTBX_PYTHON_STREAMBUF_H
 #define BOOST_ADAPTBX_PYTHON_STREAMBUF_H
-#include <RDGeneral/BoostStartInclude.h>
 #include <boost/python/object.hpp>
 #include <boost/python/str.hpp>
 #include <boost/python/extract.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/utility/typed_in_place_factory.hpp>
-#include <RDGeneral/BoostEndInclude.h>
-
-//#include <tbxx/error_utils.hpp>
-#include <RDGeneral/Invariant.h>
 
 #include <streambuf>
 #include <iostream>
@@ -144,7 +139,6 @@ class streambuf : public std::basic_streambuf<char> {
         pos_of_read_buffer_end_in_py_file(0),
         pos_of_write_buffer_end_in_py_file(buffer_size),
         farthest_pptr(0) {
-    TEST_ASSERT(buffer_size != 0);
     /* Some Python file objects (e.g. sys.stdout and sys.stdin)
        have non-functional seek and tell. If so, assign None to
        py_tell and py_seek.
@@ -388,21 +382,17 @@ class streambuf : public std::basic_streambuf<char> {
       buf_end = reinterpret_cast<std::streamsize>(epptr());
       farthest_pptr = std::max(farthest_pptr, pptr());
       upper_bound = reinterpret_cast<std::streamsize>(farthest_pptr) + 1;
-    } else {
-      CHECK_INVARIANT(0, "unreachable code");
-    }
+    } 
 
     // Sought position in "buffer coordinate"
-    off_type buf_sought;
+    off_type buf_sought=0;
     if (way == std::ios_base::cur) {
       buf_sought = buf_cur + off;
     } else if (way == std::ios_base::beg) {
       buf_sought = buf_end + (off - pos_of_buffer_end_in_py_file);
     } else if (way == std::ios_base::end) {
       return failure;
-    } else {
-      CHECK_INVARIANT(0, "unreachable code");
-    }
+    } 
 
     // if the sought position is not in the buffer, give up
     if (buf_sought < buf_begin || buf_sought >= upper_bound) return failure;
